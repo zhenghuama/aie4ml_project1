@@ -3,7 +3,7 @@
 
 using namespace adf;
 
-vec_add_graph mygraph;
+extern vec_add_graph mygraph;
 
 int main() {
     mygraph.init();
