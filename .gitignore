@@ -2,3 +2,8 @@
 /example-vector-add/*.log
 /example-vector-add/*.exe
 /example-vector-add/.*
+*.exe
+*.dp
+/example-vector-add/*.db
+/example-vector-add/*.csv
+

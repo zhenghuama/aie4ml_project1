@@ -4,9 +4,9 @@
 #include <adf.h>
 
 void vec_add(
-    adf::input_buffer<int32>& __restrict data1,
-    adf::input_buffer<int32>& __restrict data2,
-    adf::output_buffer<int32>& __restrict out
+    adf::input_buffer<int32>& data1,  // Removed __restrict
+    adf::input_buffer<int32>& data2,
+    adf::output_buffer<int32>& out
 );
 
 #endif

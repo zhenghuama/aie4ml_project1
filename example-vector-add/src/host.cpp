@@ -1,5 +1,4 @@
 #include <adf.h>
-#include "graph.hpp"
 
 using namespace adf;
 
@@ -19,7 +18,7 @@ int main() {
     req.add_buffer(2, 1024 * sizeof(int32));
     mygraph.update(req);
 
-    mygraph.run(1); // Execute the program (Start streaming and kernal execution)
+    mygraph.run(10); // Execute the program (Start streaming and kernal execution)
     mygraph.end();
     return 0;
 }
