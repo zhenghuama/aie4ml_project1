@@ -5,4 +5,5 @@
 *.dp
 /example-vector-add/*.db
 /example-vector-add/*.csv
+/example-vector-add/.*
 
