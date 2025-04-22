@@ -14,4 +14,3 @@ clean:
 	rm -f *.csv
 	rm -f *.db
 	rm -f *.jou
-	echo "Clean done"
