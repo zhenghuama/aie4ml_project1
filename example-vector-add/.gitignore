@@ -1,0 +1,32 @@
+# Ignore build output directory
+/build
+/export
+
+# Ignore object files and dependent files
+.o
+.d
+
+#Ignore logs folder and log files
+/logs
+.log
+
+#Ignore lock files
+.lock
+
+.bin
+.pdi
+.peers.ini
+.repo.yaml
+.vitisWorkspace.json
+
+#Other files
+../dense_example/generate_golden_int16.exe
+.Makefile.swp
+.Xil/
+.gitignore
+AIECompiler.log
+Map_Report.csv
+Work/
+sol.db
+xcd.log
+!.gitignore

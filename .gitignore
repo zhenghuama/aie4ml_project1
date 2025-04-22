@@ -1,9 +1,0 @@
-/example-vector-add/Work/
-/example-vector-add/*.log
-/example-vector-add/*.exe
-*.exe
-*.dp
-/example-vector-add/*.db
-/example-vector-add/*.csv
-/example-vector-add/.*
-
