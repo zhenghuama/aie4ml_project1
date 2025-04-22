@@ -1,7 +1,6 @@
 /example-vector-add/Work/
 /example-vector-add/*.log
 /example-vector-add/*.exe
-/example-vector-add/.*
 *.exe
 *.dp
 /example-vector-add/*.db
