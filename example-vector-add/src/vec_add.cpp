@@ -1,5 +1,6 @@
 #include <aie_api/aie.hpp>
 #include <aie_api/aie_adf.hpp>
+#include "vec_add.hpp"
 
 using namespace adf;
 

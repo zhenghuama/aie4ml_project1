@@ -3,7 +3,7 @@
 
 using namespace adf;
 
-class vec_add_graph : public adf::graph {
+class vec_add_graph : public graph {
 public:
     input_plio in1, in2;
     output_plio out;
