@@ -1,5 +1,5 @@
 #include <adf.h>
-#include "vec_add.hpp"
+#include "kernels.h"
 
 using namespace adf;
 
@@ -24,8 +24,14 @@ public:
         connect(in2.out[0], vadd.in[1]);
         connect(vadd.out[0], out.in[0]);
 
+	dimensions(vadd.in[0]) = {128}; // should replace with a def in *.h, but idk the name of this yet
+	dimensions(vadd.in[1]) = {128};
+	dimensions(vadd.out[0]) = {128};
+
         // Configure kernel
-        source(vadd) = "vec_add.cpp";
+        source(vadd) = "kernels/vec_add.cc";
+
+	runtime<ratio>(vadd) = 0.1;
     }
 };
 

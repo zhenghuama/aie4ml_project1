@@ -1,5 +1,6 @@
 #include <adf.h>
-#include "graph.hpp"
+#include "graph.h"
+#include "kernels.h"
 
 using namespace adf;
 
@@ -13,7 +14,10 @@ int main() {
 	 * keep in mind that this memory is shared with only the
 	 * adjacent tiles
 	*/
+
+    /** FIXME: Get the request to run how you would like it
     adf::config_request req;
+
     req.add_buffer(0, 1024 * sizeof(int32));
     req.add_buffer(1, 1024 * sizeof(int32));
     req.add_buffer(2, 1024 * sizeof(int32));
@@ -21,6 +25,13 @@ int main() {
 
     mygraph.run(1); // Execute the program (Start streaming and kernal execution)
     mygraph.end();
-    return 0;
+    */
+
+
+  mygraph.init();
+  mygraph.run(4);
+  mygraph.end();
+
+  return 0;
 }
 
