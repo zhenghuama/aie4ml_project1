@@ -28,8 +28,7 @@ int main() {
     */
 
 
-  mygraph.init();
-  mygraph.run(4);
+  mygraph.run(1);
   mygraph.end();
 
   return 0;

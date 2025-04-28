@@ -1,5 +1,6 @@
 #include <aie_api/aie.hpp>
 #include <aie_api/aie_adf.hpp>
+#include <aie_api/utils.hpp> // print and print_matrix
 using namespace adf;
 
 void vec_add(
@@ -16,7 +17,12 @@ void vec_add(
     {
         aie::vector<int32, 16> vec1 = *inIter1;
         aie::vector<int32, 16> vec2 = *inIter2;
-        aie::vector<int32, 16> res = aie::add(vec1, vec2);
+
+        aie::print(vec1,true,"vec1=");
+        aie::print_matrix(vec2,16,"vec2 matrix=");
+
+
+        auto res = aie::add(vec1, vec2);
         *outIter = res;
 		
 		//Increment indices
