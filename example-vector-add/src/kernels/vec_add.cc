@@ -19,7 +19,8 @@ void vec_add(
         aie::vector<int32, 16> vec2 = *inIter2;
 
         aie::print(vec1,true,"vec1=");
-        aie::print_matrix(vec2,16,"vec2 matrix=");
+        aie::print(vec2,true,"vec2=");
+        //aie::print_matrix(vec2,16,"vec2 matrix=");
 
 
         auto res = aie::add(vec1, vec2);
