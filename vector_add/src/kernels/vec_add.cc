@@ -1,13 +1,14 @@
+/* A simple kernel
+ */
 #include <aie_api/aie.hpp>
-#include <aie_api/aie_adf.hpp>
-#include <aie_api/utils.hpp> // print and print_matrix
-using namespace adf;
+#include <adf.h>
+#include "include.h"
 
 void vec_add(
-    input_buffer<int32>& __restrict data1,
-    input_buffer<int32>& __restrict data2,
-    output_buffer<int32>& __restrict out
-) {
+adf::input_buffer<int32> & data1, 
+adf::input_buffer<int32> & data2, 
+adf::output_buffer<int32> & out) 
+{
     // The SIMD instructions can process 16 int32 per cycle (512b registers)
     auto inIter1 = aie::begin_vector<16>(data1);
     auto inIter2 = aie::begin_vector<16>(data2);
@@ -17,13 +18,7 @@ void vec_add(
     {
         aie::vector<int32, 16> vec1 = *inIter1;
         aie::vector<int32, 16> vec2 = *inIter2;
-
-        aie::print(vec1,true,"vec1=");
-        aie::print(vec2,true,"vec2=");
-        //aie::print_matrix(vec2,16,"vec2 matrix=");
-
-
-        auto res = aie::add(vec1, vec2);
+        aie::vector<int32, 16> res = aie::add(vec1, vec2);
         *outIter = res;
 		
 		//Increment indices
@@ -32,4 +27,3 @@ void vec_add(
 		outIter++;
     }
 }
-
