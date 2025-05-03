@@ -2,37 +2,33 @@
 # Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
 # SPDX-License-Identifier: X11
 # */
+HOME := /home/z.ma
 
 F_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/AI_Engine_Development/*}')
 
 PLATFORM_REPO_PATHS := /tools/Xilinx/Vitis/2024.1/base_platforms
 
-ROOTFS ?= /home/z.ma/Downloads/xilinx-versal-common-v2024.1/rootfs.ext4
-IMAGE ?= /home/z.ma/Downloads/xilinx-versal-common-v2024.1/Image
-SDKTARGETSYSROOT ?= /home/z.ma/sdk-versal-2024.1/sysroots/cortexa72-cortexa53-xilinx-linux
+ROOTFS ?= $(HOME)/Downloads/xilinx-versal-common-v2024.1/rootfs.ext4
+IMAGE ?= $(HOME)/Downloads/xilinx-versal-common-v2024.1/Image
+SDKTARGETSYSROOT ?= $(HOME)/sdk-versal-2024.1/sysroots/cortexa72-cortexa53-xilinx-linux
 
 # Makefile input options
 TARGET := hw_emu
 PFM := tutorial
 
 # File names and locations
-GRAPH := aie/graph.cpp
+GRAPH := src/graph.cpp
 GRAPH_O := libadf.a
 
-KERNEL := s2mm.cpp mm2s.cpp
-ifeq ($(TARGET),sw_emu)
-	KERNEL_XO := s2mm.xo mm2s.xo
-else
-	KERNEL_XO := pl_kernels/s2mm.xo pl_kernels/mm2s.xo
-endif
-
+KERNEL :=
+KERNEL_XO :=
 CONFIG_FILE := system.cfg
 EMCONFIG_FILE = emconfig.json
 
 ifeq ($(TARGET),sw_emu)
 	EXECUTABLE = ./host_ps_on_x86
 else
-	EXECUTABLE = host.exe
+	EXECUTABLE = host
 endif
 PACKAGE_OUT = ./package.$(TARGET)
 
@@ -46,7 +42,7 @@ X86SIM := x86simulator
 SW_EMU_CMD := ./host_ps_on_x86 a.xclbin
 HW_EMU_CMD := ./launch_hw_emu.sh -aie-sim-options ../aiesimulator_output/aiesim_options.txt -add-env AIE_COMPILER_WORKDIR=../Work 
 
-AIE_INCLUDE_FLAGS := --include "$(XILINX_VITIS)/aietools/include" --include "./aie" --include "./data" --include "./" --aie.xlopt=0
+AIE_INCLUDE_FLAGS := --include "$(XILINX_VITIS)/aietools/include" --include "./src" --include "./data" --include "./" --aie.xlopt=0
 AIE_FLAGS := $(AIE_INCLUDE_FLAGS) --platform $(BASE_PLATFORM) --work_dir ./Work --aie.heapsize=16420
 
 ifeq ($(TARGET),sw_emu)
@@ -126,16 +122,7 @@ sd_card: all
 # Note : hw_emu and hw targets use the Unified CLI command to 
 # compile HLS kernels
 
-kernels: guard-PLATFORM_REPO_PATHS 
-
-ifeq ($(TARGET),sw_emu)
-	$(VPP) $(VPP_XO_FLAGS) -k s2mm pl_kernels/s2mm.cpp -o s2mm.xo
-	$(VPP) $(VPP_XO_FLAGS) -k mm2s pl_kernels/mm2s.cpp -o mm2s.xo
-else
-	$(VPP) $(VPP_XO_FLAGS) --config pl_kernels/s2mm.cfg
-	$(VPP) $(VPP_XO_FLAGS) --config pl_kernels/mm2s.cfg
-endif
-
+kernels: 
 
 aie: $(GRAPH_O)
 
@@ -147,37 +134,13 @@ else
 	$(AIESIM) --profile --dump-vcd=tutorial --pkg-dir=./Work
 endif 
 
-M = 4
-K = 16
-N = 16
-m = 2
-k = 4
-n = 8
-i = 100
-SUBDIR = "abc"
-
-aie/kernels/vars.h:
-	echo "#define single_M $(M)\n#define single_K $(K)\n#define single_N $(N)\n#define M_API $(m)\n#define K_API $(k)\n#define N_API $(n)" > $@
-
-run_sim: aie/kernels/vars.h golden aie sim
-	grep -v '^T' "aiesimulator_output/data/matC0.txt" > "data/matC0_sim.txt"
-	diff -w "data/matC0_sim.txt" "data/matC0.txt" > /dev/null  && echo "\n\n Success: Outputs match\n\n" || echo "\n\nError: Output does not match\n\n"
-	mkdir -p results/$(SUBDIR)/$(i)_mkn_$(m)x$(k)x$(n)__MKN_$(M)x$(K)x$(N)/
-	cp -r aiesimulator_output results/$(SUBDIR)/$(i)_mkn_$(m)x$(k)x$(n)__MKN_$(M)x$(K)x$(N)/
-	cp -r Work results/$(SUBDIR)/$(i)_mkn_$(m)x$(k)x$(n)__MKN_$(M)x$(K)x$(N)/
-	cp -r data results/$(SUBDIR)/$(i)_mkn_$(m)x$(k)x$(n)__MKN_$(M)x$(K)x$(N)/data
-	cp tutorial.vcd results/$(SUBDIR)/$(i)_mkn_$(m)x$(k)x$(n)__MKN_$(M)x$(K)x$(N)/
+run_sim: aie sim
+	grep -v '^T' "aiesimulator_output/data/output.txt" > "data/output.txt"
 
 analyze: run_sim
 	vitis_analyzer -a aiesimulator_output/default.aierun_summary
 
-golden: generate_golden_int16.cpp
-	mkdir -p data
-	g++ -o generate_golden_int16.exe generate_golden_int16.cpp
-	./generate_golden_int16.exe
-
-
-
+golden:
 
 
 
@@ -213,12 +176,12 @@ xsa: guard-PLATFORM_REPO_PATHS $(GRAPH_O) $(KERNEL_XO)
 ifeq ($(TARGET),sw_emu)
 host: guard-CXX guard-SDKTARGETSYSROOT 
 	cd ./sw
-	g++ -Wall -c -std=c++17 -D__PS_ENABLE_AIE__ -Wno-int-to-pointer-cast -I${XILINX_XRT}/include -I./ -I../aie -I${XILINX_VITIS}/aietools/include  -o host.o host.cpp
+	g++ -Wall -c -std=c++17 -D__PS_ENABLE_AIE__ -Wno-int-to-pointer-cast -I${XILINX_XRT}/include -I./ -I../aie -I${XILINX_VITIS}/aietools/include  -o graph.o graph.cpp
 	g++ *.o -lxrt_coreutil -std=c++17 -L${XILINX_XRT}/lib -o ./host_ps_on_x86
 else
 host: guard-CXX guard-SDKTARGETSYSROOT 
 	cd ./sw 
-	$(CXX) $(GCC_FLAGS) $(GCC_INCLUDES) -o host.o host.cpp
+	$(CXX) $(GCC_FLAGS) $(GCC_INCLUDES) -o graph.o graph.cpp
 	$(CXX) *.o $(GCC_LIB) -std=c++17 -o ${EXECUTABLE}
 	@echo "COMPLETE: Host application created."
 endif

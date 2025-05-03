@@ -5,11 +5,11 @@
 
 using namespace adf;
 
-simpleGraph mygraph;
+vecAddGraph v_graph;
 
 int main(void) {
-  mygraph.init();
-  mygraph.run(1);
-  mygraph.end();
+  v_graph.init();
+  v_graph.run(1);
+  v_graph.end();
   return 0;
 }

@@ -5,14 +5,14 @@
 
 using namespace adf;
 
-class simpleGraph : public adf::graph {
+class vecAddGraph : public adf::graph {
 private:
   kernel vadd;
 public:
   input_plio  in1;
   input_plio in2;
   output_plio out;
-  simpleGraph(){
+  vecAddGraph(){
     
     in1  = input_plio::create(plio_32_bits, "data/input1.txt");
     in2  = input_plio::create(plio_32_bits, "data/input2.txt");
