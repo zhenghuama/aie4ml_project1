@@ -15,11 +15,12 @@ AIE_FLAGS += --xlopt=0
 AIE_SOURCES := $(SRC_DIR)/graph.cpp $(SRC_DIR)/kernels/kernels.cc
 
 compile:
-	aiecompiler $(AIE_FLAGS) $(AIE_SOURCES) -o $(AIE_OUT_DIR)
+	aiecompiler $(AIE_FLAGS) $(AIE_SOURCES) -workdir=$(AIE_OUT_DIR)
 
 sim:
 	aiesimulator --pkg-dir=$(AIE_OUT_DIR) --dump-vcd=foo
 	grep -v '^T' aiesimulator_output/data/output.txt > data/output.txt
+
 	vitis_analyzer aiesimulator_output/default.aierun_summary
 
 
