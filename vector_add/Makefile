@@ -20,7 +20,12 @@ compile:
 sim:
 	aiesimulator --pkg-dir=$(AIE_OUT_DIR) --dump-vcd=foo
 	grep -v '^T' aiesimulator_output/data/output.txt > data/output.txt
-
+	@echo "##################### Comparing simulated output to correct output ####################"
+	@if diff -w data/output.txt data/correct_output.txt; then \
+		echo "Success - AIE output matches correct output."; \
+	else \
+		echo "Failure - AIE output does not match correct output."; \
+	fi
 	vitis_analyzer aiesimulator_output/default.aierun_summary
 
 
