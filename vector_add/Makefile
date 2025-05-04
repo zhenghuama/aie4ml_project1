@@ -2,15 +2,15 @@
 # Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
 # SPDX-License-Identifier: X11
 # */
-HOME := /home/z.ma
+ZMA_HOME = /home/z.ma
 
 F_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/AI_Engine_Development/*}')
 
 PLATFORM_REPO_PATHS := /tools/Xilinx/Vitis/2024.1/base_platforms
 
-ROOTFS ?= $(HOME)/Downloads/xilinx-versal-common-v2024.1/rootfs.ext4
-IMAGE ?= $(HOME)/Downloads/xilinx-versal-common-v2024.1/Image
-SDKTARGETSYSROOT ?= $(HOME)/sdk-versal-2024.1/sysroots/cortexa72-cortexa53-xilinx-linux
+ROOTFS ?= $(ZMA_HOME)/Downloads/xilinx-versal-common-v2024.1/rootfs.ext4
+IMAGE ?= $(ZMA_HOME)/Downloads/xilinx-versal-common-v2024.1/Image
+SDKTARGETSYSROOT ?= $(ZMA_HOME)/sdk-versal-2024.1/sysroots/cortexa72-cortexa53-xilinx-linux
 
 # Makefile input options
 TARGET := hw_emu
@@ -20,7 +20,7 @@ PFM := tutorial
 GRAPH := src/graph.cpp
 GRAPH_O := libadf.a
 
-KERNEL :=
+KERNEL := src/kernels/kernels.cpp
 KERNEL_XO :=
 CONFIG_FILE := system.cfg
 EMCONFIG_FILE = emconfig.json
@@ -134,11 +134,17 @@ else
 	$(AIESIM) --profile --dump-vcd=tutorial --pkg-dir=./Work
 endif 
 
-run_sim: aie sim
+compare_outputs:
+	@echo "#################### Comparing simulated output with correct output ####################"
+	diff -w data/output.txt data/correct_output.txt
+
+
+run_sim: aie sim 
 	grep -v '^T' "aiesimulator_output/data/output.txt" > "data/output.txt"
 
-analyze: run_sim
+analyze: run_sim compare_outputs
 	vitis_analyzer -a aiesimulator_output/default.aierun_summary
+
 
 golden:
 
@@ -243,7 +249,6 @@ endif
 ###########################################################################
 
 clean:
-	rm -rf _x v++* $(KERNEL_XO) $(GRAPH_O) *.o *.compile_summary* *.xpe xnwOut *.xclbin* *.log *.xsa Work *.db *.csv *$(PFM)* *.jou .Xil
-	rm -rf sw/*.log sw/*.xclbin sw/cfg/ sw/launch_hw_emu.sh sw/qemu_dts_files sw/emu_qemu_scripts sw/*.exe sw/_x/ sw/*summary sw/*.o sw/*.elf sw/*.xpe sw/xnwOut sw/Work sw/*.csv sw/*.db sw/*.bin sw/*.BIN sw/*.bif sw/launch_hw_emulator.sh sw/*.txt sw/emulation sw/.Xil ./x86simulator_output
-	rm -rf sw/sd_card sw/sd_card.img sw/*.o ./*.exe sw/qeumu* x86simulator_output/ aiesimulator_output/ s2mm/ mm2s/ hls/
-	rm -rf *.exe data aie/kernels/vars.h
+	rm -rf .AIE_SIM_CMD_LINE_OPTIONS ISS_RPC_SERVER_PORT *.json pl_sample_counts .wsdata Work logs	
+	rm -rf *.log *.csv *.a .Xil *.vcd *.db aiesimulator_output
+	> data/output.txt

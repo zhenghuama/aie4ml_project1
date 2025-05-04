@@ -19,7 +19,7 @@ public:
 
     out = output_plio::create(plio_32_bits, "data/output.txt");
 
-    vadd = kernel::create(vec_add);
+    vadd = kernel::create(vector_add);
 
     adf::connect(in1.out[0], vadd.in[0]);
     connect(in2.out[0], vadd.in[1]);

@@ -4,7 +4,7 @@
 #include <adf.h>
 #include "include.h"
 
-void vec_add(
+void vector_add(
 adf::input_buffer<int32> & data1, 
 adf::input_buffer<int32> & data2, 
 adf::output_buffer<int32> & out) 
@@ -21,9 +21,9 @@ adf::output_buffer<int32> & out)
         aie::vector<int32, 16> res = aie::add(vec1, vec2);
         *outIter = res;
 		
-		//Increment indices
-		inIter1++;
-		inIter2++;
-		outIter++;
+	//Increment indices
+	inIter1++;
+	inIter2++;
+	outIter++;
     }
 }
