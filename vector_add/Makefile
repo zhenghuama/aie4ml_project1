@@ -1,250 +1,27 @@
-# /*
-# Copyright (C) 2023, Advanced Micro Devices, Inc. All rights reserved.
-# SPDX-License-Identifier: X11
-# */
-ZMA_HOME = /home/z.ma
-
-F_PROJ_ROOT ?= $(shell bash -c 'export MK_PATH=$(MK_PATH); echo $${MK_PATH%/AI_Engine_Development/*}')
+#Simple Makefile for vector addition program
 
 PLATFORM_REPO_PATHS := /tools/Xilinx/Vitis/2024.1/base_platforms
-
-ROOTFS ?= $(ZMA_HOME)/Downloads/xilinx-versal-common-v2024.1/rootfs.ext4
-IMAGE ?= $(ZMA_HOME)/Downloads/xilinx-versal-common-v2024.1/Image
-SDKTARGETSYSROOT ?= $(ZMA_HOME)/sdk-versal-2024.1/sysroots/cortexa72-cortexa53-xilinx-linux
-
-# Makefile input options
-TARGET := hw_emu
-PFM := tutorial
-
-# File names and locations
-GRAPH := src/graph.cpp
-GRAPH_O := libadf.a
-
-KERNEL := src/kernels/kernels.cpp
-KERNEL_XO :=
-CONFIG_FILE := system.cfg
-EMCONFIG_FILE = emconfig.json
-
-ifeq ($(TARGET),sw_emu)
-	EXECUTABLE = ./host_ps_on_x86
-else
-	EXECUTABLE = host
-endif
-PACKAGE_OUT = ./package.$(TARGET)
-
 BASE_PLATFORM ?= ${PLATFORM_REPO_PATHS}/xilinx_vck190_base_202410_1/xilinx_vck190_base_202410_1.xpfm
 
-# Command-line options
-VPP := v++
-AIECC := v++ -c --mode aie
-AIESIM := aiesimulator
-X86SIM := x86simulator
-SW_EMU_CMD := ./host_ps_on_x86 a.xclbin
-HW_EMU_CMD := ./launch_hw_emu.sh -aie-sim-options ../aiesimulator_output/aiesim_options.txt -add-env AIE_COMPILER_WORKDIR=../Work 
+SRC_DIR := src
+AIE_OUT_DIR := Work
 
-AIE_INCLUDE_FLAGS := --include "$(XILINX_VITIS)/aietools/include" --include "./src" --include "./data" --include "./" --aie.xlopt=0
-AIE_FLAGS := $(AIE_INCLUDE_FLAGS) --platform $(BASE_PLATFORM) --work_dir ./Work --aie.heapsize=16420
+AIE_FLAGS := -target=hw
+AIE_FLAGS += --platform $(BASE_PLATFORM)
+AIE_FLAGS += --include="$(SRC_DIR)"             
+AIE_FLAGS += --include="$(SRC_DIR)/kernels"      
+AIE_FLAGS += --xlopt=0
 
-ifeq ($(TARGET),sw_emu)
-	AIE_FLAGS += --target x86sim
-else
-	AIE_FLAGS += --target hw
-endif 
+AIE_SOURCES := $(SRC_DIR)/graph.cpp $(SRC_DIR)/kernels/kernels.cc
 
-ifeq ($(TARGET),sw_emu)
-	VPP_XO_FLAGS := -c --platform $(BASE_PLATFORM) -t $(TARGET) --save-temps -g
-else
-	VPP_XO_FLAGS := -c --mode hls --platform $(BASE_PLATFORM)
-endif
-	
-VPP_LINK_FLAGS := -l -t $(TARGET) --platform $(BASE_PLATFORM) $(KERNEL_XO) $(GRAPH_O) --save-temps -g --config $(CONFIG_FILE) -o $(PFM).xsa
-VPP_FLAGS := $(VPP_LINK_FLAGS)
+compile:
+	aiecompiler $(AIE_FLAGS) $(AIE_SOURCES) -o $(AIE_OUT_DIR)
 
-GCC_FLAGS := -Wall -c \
-	     -std=c++17 -Wno-int-to-pointer-cast --sysroot=${SDKTARGETSYSROOT} 
+sim:
+	aiesimulator --pkg-dir=$(AIE_OUT_DIR) --dump-vcd=foo
+	grep -v '^T' aiesimulator_output/data/output.txt > data/output.txt
+	vitis_analyzer aiesimulator_output/default.aierun_summary
 
-ifeq ($(TARGET),sw_emu)
-	GCC_FLAGS += -I${XILINX_XRT}/include
-endif
-
-ifeq ($(TARGET),sw_emu)
-	GCC_INCLUDES += -I${XILINX_XRT}/include 
-else
-	GCC_INCLUDES += -I$(SDKTARGETSYSROOT)/usr/include/xrt -I$(SDKTARGETSYSROOT)/usr/include
-endif
-
-GCC_LIB := -lxrt_coreutil
-ifeq ($(TARGET),sw_emu)
-	GCC_LIB += -L${XILINX_XRT}/lib 
-else
-	GCC_LIB += -L${XILINX_XRT}/lib --sysroot=${SDKTARGETSYSROOT}
-endif 
-
-LDCLFLAGS := $(GCC_LIB)
-
-.ONESHELL:
-.PHONY: clean all kernels aie sim xsa host package run_emu analyze run_sim
-
-###
-# Guarding Checks. Do not modify.
-###
-check_defined = \
-	$(strip $(foreach 1,$1, \
-		$(call __check_defined,$1,$(strip $(value 2)))))
-
-__check_defined = \
-	$(if $(value $1),, \
-		$(error Undefined $1$(if $2, ($2))))
-
-guard-PLATFORM_REPO_PATHS:
-	$(call check_defined, PLATFORM_REPO_PATHS, Set your where you downloaded xilinx_vck190_base_202410_1)
-
-guard-ROOTFS:
-	$(call check_defined, ROOTFS, Set to: xilinx-versal-common-v2024.1/rootfs.ext4)
-
-guard-IMAGE:
-	$(call check_defined, IMAGE, Set to: xilinx-versal-common-v2024.1/Image)
-
-guard-CXX:
-	$(call check_defined, CXX, Run: xilinx-versal-common-v2024.1/environment-setup-aarch64-xilinx-linux)
-
-guard-SDKTARGETSYSROOT:
-	$(call check_defined, SDKTARGETSYSROOT, Run: xilinx-versal-common-v2024.1/environment-setup-aarch64-xilinx-linux)
-
-###
-
-all: kernels aie sim xsa host package
-sd_card: all
-
-######################################################
-# This step compiles the HLS C kernels and creates the *.xo's 
-# which is used as the output and from the *.cpp files.
-# Note : hw_emu and hw targets use the Unified CLI command to 
-# compile HLS kernels
-
-kernels: 
-
-aie: $(GRAPH_O)
-
-#AIE or X86 Simulation
-sim: $(GRAPH_O)
-ifeq ($(TARGET),sw_emu)
-	$(X86SIM) --pkg-dir=./Work
-else
-	$(AIESIM) --profile --dump-vcd=tutorial --pkg-dir=./Work
-endif 
-
-compare_outputs:
-	@echo "#################### Comparing simulated output with correct output ####################"
-	diff -w data/output.txt data/correct_output.txt
-
-
-run_sim: aie sim 
-	grep -v '^T' "aiesimulator_output/data/output.txt" > "data/output.txt"
-
-analyze: run_sim compare_outputs
-	vitis_analyzer -a aiesimulator_output/default.aierun_summary
-
-
-golden:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#AIE or X86 compilation
-$(GRAPH_O): $(GRAPH)
-	$(AIECC) $(AIE_FLAGS) $(GRAPH)
-#####################################################
-
-########################################################
-# Once the kernels and graph are generated, you can build
-# the hardware part of the design. This creates an xsa
-# that will be used to run the design on the platform.
-xsa: guard-PLATFORM_REPO_PATHS $(GRAPH_O) $(KERNEL_XO)
-	$(VPP) $(VPP_LINK_FLAGS) || (echo "task: [xsa] failed error code: $$?"; exit 1)
-	@echo "COMPLETE: .xsa created."
-########################################################
-
-############################################################################################################################
-# For sw emulation, hw emulation and hardware, compile the PS code and generate the host.exe. This is needed for creating the sd_card.
-ifeq ($(TARGET),sw_emu)
-host: guard-CXX guard-SDKTARGETSYSROOT 
-	cd ./sw
-	g++ -Wall -c -std=c++17 -D__PS_ENABLE_AIE__ -Wno-int-to-pointer-cast -I${XILINX_XRT}/include -I./ -I../aie -I${XILINX_VITIS}/aietools/include  -o graph.o graph.cpp
-	g++ *.o -lxrt_coreutil -std=c++17 -L${XILINX_XRT}/lib -o ./host_ps_on_x86
-else
-host: guard-CXX guard-SDKTARGETSYSROOT 
-	cd ./sw 
-	$(CXX) $(GCC_FLAGS) $(GCC_INCLUDES) -o graph.o graph.cpp
-	$(CXX) *.o $(GCC_LIB) -std=c++17 -o ${EXECUTABLE}
-	@echo "COMPLETE: Host application created."
-endif
-############################################################################################################################
-
-##################################################################################################
-# Depending on the TARGET, it'll either generate the PDI for sw_emu,hw_emu or hw.
-
-ifeq ($(TARGET),sw_emu)
-
-package: guard-PLATFORM_REPO_PATHS guard-IMAGE guard-ROOTFS
-	cd ./sw
-	emconfigutil --platform $(BASE_PLATFORM) --nd 1;\
-	v++ -p -t ${TARGET} \
-		--package.defer_aie_run \
-		--platform ${BASE_PLATFORM} \
-		--package.out_dir $(PACKAGE_OUT) \
-		../$(PFM).xsa ../$(GRAPH_O)
-	
-	@echo "COMPLETE: sw_emu package created."
-else
-
-package: guard-PLATFORM_REPO_PATHS guard-IMAGE guard-ROOTFS
-	cd ./sw
-	v++ -p -t ${TARGET} \
-		-f ${BASE_PLATFORM} \
-		--package.rootfs=${ROOTFS} \
-		--package.image_format=ext4 \
-		--package.boot_mode=sd \
-		--package.kernel_image=${IMAGE} \
-		--package.defer_aie_run \
-		--package.sd_file embedded_exec.sh \
-		--package.sd_file host.exe ../tutorial.xsa ../libadf.a
-	@echo "COMPLETE: emulation package created."
-
-endif
-###################################################################################################
-
-#Build the design and then run sw/hw emulation 
-run: all run_emu
-
-###########################################################################
-run_emu: 
-# If the target is for SW_EMU, launch the emulator
-ifeq (${TARGET},sw_emu)
-	cd ./sw
-	export XCL_EMULATION_MODE=$(TARGET) 
-	$(SW_EMU_CMD)
-else
-# If the target is for HW_EMU, launch the emulator
-ifeq (${TARGET},hw_emu)
-	cd ./sw
-	$(HW_EMU_CMD)
-else
-	@echo "Hardware build, no emulation executed."
-endif
-endif
 
 ###########################################################################
 
