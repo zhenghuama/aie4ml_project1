@@ -20,7 +20,6 @@ compile:
 sim:
 	aiesimulator --pkg-dir=$(AIE_OUT_DIR) --dump-vcd=foo
 	grep -v '^T' aiesimulator_output/data/C_output.txt > data/C_output.txt
-	vitis_analyzer aiesimulator_output/default.aierun_summary
 
 ###########################################################################
 

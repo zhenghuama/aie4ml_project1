@@ -2,10 +2,8 @@
 #define FUNCTION_KERNELS_H
 #include <adf.h>
 
-
-void matmul_int32_scalar_transfer(
-	input_window<int32_t>* in_A,
-	input_window<int32_t>* in_B,
-	output_window<int32_t>* out_C);
+void matmul_4x4(
+    adf::input_buffer<int16>& a, adf::input_buffer<int16>& b, adf::output_buffer<int16>& c
+);
 
 #endif
