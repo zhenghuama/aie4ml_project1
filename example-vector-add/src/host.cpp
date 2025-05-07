@@ -1,36 +1,12 @@
-#include <adf.h>
-#include "graph.h"
-#include "kernels.h"
 
-using namespace adf;
+#include "graph.hpp"
 
-vec_add_graph mygraph;
+simpleGraph vadd_graph;
 
-int main() {
-    mygraph.init();
-    
-    //Configure data window sizes (1024 elements)
-	/* Buffers are allocated to the local memory of a tile
-	 * keep in mind that this memory is shared with only the
-	 * adjacent tiles
-	*/
-
-    /** FIXME: Get the request to run how you would like it
-    adf::config_request req;
-
-    req.add_buffer(0, 1024 * sizeof(int32));
-    req.add_buffer(1, 1024 * sizeof(int32));
-    req.add_buffer(2, 1024 * sizeof(int32));
-    mygraph.update(req);
-
-    mygraph.run(1); // Execute the program (Start streaming and kernal execution)
-    mygraph.end();
-    */
-
-
-  mygraph.run(1);
-  mygraph.end();
+int main(int argc, char** argv) {
+  vadd_graph.init();
+  vadd_graph.run(256);
+  vadd_graph.end();
 
   return 0;
 }
-
