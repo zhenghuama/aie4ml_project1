@@ -5,6 +5,7 @@
 void matmul_4x16x4(
     adf::input_buffer<int16>& __restrict a,
     adf::input_buffer<int16>& __restrict b,
-    adf::output_buffer<int16>& __restrict c);
+    adf::output_buffer<int16>& __restrict c,
+    int a_block, int b_block);
 
 #endif

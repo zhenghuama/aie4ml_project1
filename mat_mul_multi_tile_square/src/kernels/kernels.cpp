@@ -6,10 +6,11 @@ using MMUL = aie::mmul<4, 4, 4, int16, int16>;
 void matmul_4x16x4(
     input_buffer<int16>& __restrict a,
     input_buffer<int16>& __restrict b,
-    output_buffer<int16>& __restrict c)
+    output_buffer<int16>& __restrict c,
+    int a_block, int b_block)
 {
-    auto a_iter = aie::begin_vector<MMUL::size_A>(a);
-    auto b_iter = aie::begin_vector<MMUL::size_B>(b);
+    auto a_iter = aie::begin_vector<MMUL::size_A>(a) + a_block*64;
+    auto b_iter = aie::begin_vector<MMUL::size_B>(b) + b_block*64;
     auto c_iter = aie::begin_vector<MMUL::size_C>(c);
 
     MMUL m;
