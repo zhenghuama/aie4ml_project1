@@ -9,8 +9,8 @@ void matmul_4x16x4(
     output_buffer<int16>& __restrict c,
     int a_block, int b_block)
 {
-    auto a_iter = aie::begin_vector<MMUL::size_A>(a) + a_block*64;
-    auto b_iter = aie::begin_vector<MMUL::size_B>(b) + b_block*64;
+    auto a_iter = aie::begin_vector<MMUL::size_A>(a) + a_block*4;
+    auto b_iter = aie::begin_vector<MMUL::size_B>(b) + b_block*4;
     auto c_iter = aie::begin_vector<MMUL::size_C>(c);
 
     MMUL m;

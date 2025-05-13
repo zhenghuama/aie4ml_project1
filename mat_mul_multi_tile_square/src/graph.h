@@ -33,13 +33,13 @@ public:
                 dimensions(mmul[row][col].in[1]) = {256};
 							 
                 // Connect parameter ports
-                connect<parameter>(a_block_param[row][col], mmul[row][col].in[2]);
-                connect<parameter>(b_block_param[row][col], mmul[row][col].in[3]);
+                connect(a_block_param[row][col], mmul[row][col].in[2]);
+                connect(b_block_param[row][col], mmul[row][col].in[3]);
 
 		// Create PLIO with 32-bit interface for 4x4 int16 blocks
 		c_out[row][col] = output_plio::create(
 		  plio_128_bits,
-		  "data/C_output"+std::to_string(row)+"_"+std::to_string(col)+".txt"
+		  "data/C_output_"+std::to_string(row)+"_"+std::to_string(col)+".txt"
 		);
 
                 connect(mmul[row][col].out[0], c_out[row][col].in[0]);

@@ -21,7 +21,8 @@ sim:
 	aiesimulator --pkg-dir=$(AIE_OUT_DIR) --dump-vcd=foo
 	for i in $(shell seq 0 3); do \
 		for j in $(shell seq 0 3); do \
-			grep -v '^T' aiesimulator_output/data/C_output_$$i_$$j.txt >> data/C_output.txt
+			grep -v '^T' aiesimulator_output/data/C_output_$$i\_$$j.txt >> data/C_output.txt; \
+		done; \
 	done
 
 ###########################################################################
