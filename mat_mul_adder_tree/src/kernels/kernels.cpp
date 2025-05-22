@@ -1,39 +1,94 @@
 #include <aie_api/aie.hpp>
 #include <aie_api/aie_adf.hpp>
+#include "include.h"
+#include "kernels.h"
 
-const int M = 4; //rows of A (batch dimension)
-const int K = 32; //length wise split (inner dimension)
-const int N = 128; //columns of B (height of layer) 
+int K_Tile = K/4;
 
+using namespace adf;
 
-void matmul_skinny(
-  input_buffer<int16>& a, 
-  input_buffer<int16>& b,
-  output_buffer<int16>& c,
-  int a_block, int b_block)
+void mmul_skinny(
+    input_buffer<int16>& a_buf,
+    input_buffer<int16>& b_buf, 
+    output_buffer<int16>& c_buf,
+    int a_block)
 {
-  auto a = aie::begin_vector<32>(in_a);
-  auto b = aie::begin_vector<32>(in_b);
-  auto c = aie::begin_vector<32>(out_c);
+   auto a_iter = aie::begin_vector<32>(a_buf) + K_Tile/32*a_block;
+   auto c_iter = aie::begin(c_buf);
 
-  aie::accum<acc48, 32> acc;
-
-  for (int m = 0; m < M; ++m) {
-    auto b = aie::begin_vector<32>(in_b);
-    for (int n = 0; n < N; ++n) {
-       auto a = aie::begin_vector<32>(in_a)+m*k/32;  //Establishes row of A that will be operated on
-       for (int k = 0; k < K/32; ++k) {
-	  a_vec = *a++; //increment length-wise splits in strides of 32 (must pad with zeros somehow)
-	  b_vec = *b++; //increment section of the b column that must be operated on (must pad with zeros somehow)
-	  if (k == 0) acc = aie::mul16(a_vec, b_vec);
-	  else acc = aie::mac16(acc, a_vec, b_vec);
+   for (int n = 0; n < N; ++n) {
+       auto b_iter = aie::begin_vector<32>(b_buf);
+       for (int m = 0; m < M; ++m) {
+           aie::accum<acc48, 32> acc = aie::zeros<acc48, 32>();
+	   aie::vector<int16, 32> a_vec;
+	   aie::vector<int16, 32> b_vec;
+	   for (int k = 0; k < K_Tile/32; ++k) {
+	       a_vec = *a_iter++;
+	       b_vec = *b_iter++;
+	        
+	       if (k == 0) {
+	           acc = aie::mul(a_vec, b_vec);
+	       } else {
+		   acc = aie::mac(acc, a_vec, b_vec);
+	       }
+	   }
+	   a_iter -= K_Tile/32;
+           aie::vector<int16, 32> res_vec = acc.template to_vector<int16>();
+           int16_t res = aie::reduce_add(res_vec);
+           *c_iter++ = res;  
        }
-    *c++ = acc.template to_vector<int16>();
-    //instead of a vector I want to sum the accumulator element-wise to get a scalar then write output. Is this possible?
-    }
-  }
-
-
-
+       a_iter += K/32;
+   }
+}
        
+	   
+// This kernels is supposed to work when the internal dimension (K) is not a multiple of 32. This kernel does not yet work. 
+// I think it doesn't work because random access into a buffer, whether using the buffer directly or using an iterator, is not a thing. Stoopid.
+void mmul_skinny_padding_aware(
+    input_buffer<int16>& a_buf,
+    input_buffer<int16>& b_buf,
+    output_buffer<int16>& c_buf)
+{
+    auto a_iter = aie::begin(a_buf);
+    auto b_iter = aie::begin(b_buf);
+    auto c_iter = aie::begin(c_buf);
     
+    constexpr int VEC = 32;
+    const int K_full = K_Tile / VEC;
+    const int K_rem = K_Tile % VEC;
+
+    for (int n = 0; n < N; ++n) {
+        for (int m = 0; m < M; ++m) {
+            aie::accum<acc48, VEC> acc = aie::zeros<acc48, VEC>();
+
+            // Full vector blocks
+            for (int k = 0; k < K_full; ++k) {
+                auto a_vec = aie::load_v<VEC>(&a_iter[n*K + k*VEC]);
+                auto b_vec = aie::load_v<VEC>(&b_iter[m*K_Tile + k*VEC]);
+                if (k == 0) {
+		    aie::mul(a_vec, b_vec);
+                } else {
+                    aie::mac(acc, a_vec, b_vec);
+	        }
+            }
+
+            // Remainder
+            if (K_rem > 0) {
+                alignas(aie::vector_decl_align) int16 a_tail[VEC] = {0};
+                alignas(aie::vector_decl_align) int16 b_tail[VEC] = {0};
+                for (int i = 0; i < K_rem; ++i) {
+                    a_tail[i] = a_iter[n*K + K_full*VEC + i];
+                    b_tail[i] = b_iter[m*K_Tile + K_full*VEC + i];
+                }
+                auto a_vec = aie::load_v<VEC>(a_tail);
+                auto b_vec = aie::load_v<VEC>(b_tail);
+                acc = aie::mac(acc, a_vec, b_vec);
+            }
+
+            aie::vector<int16, VEC> res_vec = acc.template to_vector<int16>();
+            int16_t res = aie::reduce_add(res_vec);
+            c_iter[n*K + m] = res; // Safe, bounds-checked write
+        }
+    }
+}
+
