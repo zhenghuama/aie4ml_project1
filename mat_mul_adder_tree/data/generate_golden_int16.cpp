@@ -5,12 +5,12 @@
 using namespace std;
 
 int main() {
-   for (int k = 0; k < 4; ++k) {
+   for (int k = 0; k < T; ++k) {
        std::ofstream B;
        B.open("B_"+to_string(k)+".txt", std::ios::trunc);
 
        for (int i = 0; i < M; ++i) {
-           for (int j = k*(K/4); j < (k+1)*(K/4); ++j) {
+           for (int j = k*(K/T); j < (k+1)*(K/T); ++j) {
 	       B << ((j == i) ? 1 : 0) << " ";
 	       if (j % 8 == 7) B << "\n";
            }

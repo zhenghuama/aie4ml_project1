@@ -7,51 +7,61 @@ using namespace adf;
 
 class SingleTileTest : public adf::graph {
 public:
-        kernel mmul[4];
-	kernel add;
+        kernel mmul[T/6][T/4];
+	kernel add[5];
 
 	input_plio in_A;
-	input_plio in_B[4];
+	input_plio in_B[T/6][T/4];
 	output_plio out_C;
 
-	input_port a_block_param[4];
+	input_port a_block_param[T];
 
     SingleTileTest() {
         in_A = input_plio::create(plio_128_bits, "data/A_matrix.txt");
         out_C = output_plio::create(plio_128_bits, "data/C_output.txt");
+	add[4] = kernel::create(add_tree_4);
+	source(add[4]) = "src/kernels/add_tree.cpp";
+	connect(add[4].out[0], out_C.in[0]); 
+	dimensions(add[4].out[0]) = {N*M};
+	runtime<ratio>(add[4]) = 1.0;
 
-	add = kernel::create(add_tree);
-	source(add) = "src/kernels/add_tree.cpp";
-	runtime<ratio>(add) = 1.0;
-	dimensions(add.out[0]) = {N*M};
-        connect(add.out[0], out_C.in[0]);
+	for (int t = 0; t < 4; ++t) {
+	    add[t] = kernel::create(add_tree_6);
+	    source(add[t]) = "src/kernels/add_tree.cpp";
+	    runtime<ratio>(add[t]) = 1.0;
+	    dimensions(add[t].out[0]) = {N*M};
+	    dimensions(add[4].in[t]) = {N*M};
+            connect(add[t].out[0], add[4].in[t]);
 
-	for (int i = 0; i < 4; ++i) {
-	    dimensions(add.in[i]) = {N*M};
-            in_B[i] = input_plio::create(plio_128_bits, "data/B_"+std::to_string(i)+ ".txt");
+	    for (int i = 0; i < 6; ++i) {
+	        dimensions(add[t].in[i]) = {N*M};
+                in_B[t][i] = input_plio::create(plio_128_bits, "data/B_"+std::to_string(t*6+i)+ ".txt");
 	     
-            mmul[i] = kernel::create(mmul_skinny);
+                mmul[t][i] = kernel::create(mmul_skinny);
+                source(mmul[t][i]) = "src/kernels/kernels.cpp";
 
-            runtime<ratio>(mmul[i]) = 1.0;
+                runtime<ratio>(mmul[t][i]) = 1.0;
 
-            dimensions(mmul[i].in[0]) = {N*K};
-            dimensions(mmul[i].in[1]) = {M*(K/4)};
-            dimensions(mmul[i].out[0]) = {N*M};
+                dimensions(mmul[t][i].in[0]) = {N*K};
+                dimensions(mmul[t][i].in[1]) = {M*(K/T)};
+                dimensions(mmul[t][i].out[0]) = {N*M};
 
-            connect(in_A.out[0], mmul[i].in[0]);
-            connect(in_B[i].out[0], mmul[i].in[1]);
-            connect(mmul[i].out[0], add.in[i]);
+                connect(in_A.out[0], mmul[t][i].in[0]);
+                connect(in_B[t][i].out[0], mmul[t][i].in[1]);
+                connect(mmul[t][i].out[0], add[t].in[i]);
 
-	    // Connect parameter ports
-	    connect(a_block_param[i], mmul[i].in[2]);
-
-            source(mmul[i]) = "src/kernels/kernels.cpp";
+	        // Connect parameter ports
+	        connect(a_block_param[t*6+i], mmul[t][i].in[2]);
+	    }
+	    location<kernel>(add[t]) = tile(2*t+1, 2);
+	    location<kernel>(mmul[t][0]) = tile(2*t, 0);
+	    location<kernel>(mmul[t][1]) = tile(2*t, 1); 
+	    location<kernel>(mmul[t][2]) = tile(2*t, 2);
+	    location<kernel>(mmul[t][3]) = tile(2*t, 3); 
+	    location<kernel>(mmul[t][4]) = tile(2*t, 4);
+	    location<kernel>(mmul[t][5]) = tile(2*t, 5);
 	}
-	location<kernel>(add) = tile(0, 1);
-	location<kernel>(mmul[0]) = tile(0, 0);
-	location<kernel>(mmul[1]) = tile(1, 1);
-	location<kernel>(mmul[2]) = tile(0, 2);
-	location<kernel>(mmul[3]) = tile(1, 0);
+	location<kernel>(add[4]) = tile(5, 0);
     }
 };
 	    

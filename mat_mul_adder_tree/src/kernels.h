@@ -14,11 +14,29 @@ void mmul_skinny_padding_aware(
     adf::output_buffer<int16>& c_buf
 );
 
-void add_tree(
-    adf::input_buffer<int16>& in0,  // North neighbor
-    adf::input_buffer<int16>& in1,  // East neighbor  
-    adf::input_buffer<int16>& in2,  // South neighbor
-    adf::input_buffer<int16>& in3,  // West neighbor
+void add_tree_4(
+    adf::input_buffer<int16>& in0, 
+    adf::input_buffer<int16>& in1,  
+    adf::input_buffer<int16>& in2,
+    adf::input_buffer<int16>& in3,
     adf::output_buffer<int16>& out
 );
+
+void add_tree_3(
+    adf::input_buffer<int16>& in0,
+    adf::input_buffer<int16>& in1,
+    adf::input_buffer<int16>& in2,
+    adf::output_buffer<int16>& out
+);
+
+void add_tree_6(
+    adf::input_buffer<int16>& in1,
+    adf::input_buffer<int16>& in2,
+    adf::input_buffer<int16>& in3,
+    adf::input_buffer<int16>& in4,
+    adf::input_buffer<int16>& in5,
+    adf::input_buffer<int16>& in6,
+    adf::output_buffer<int16>& out
+);
+
 #endif

@@ -3,7 +3,7 @@
 #include "include.h"
 #include "kernels.h"
 
-int K_Tile = K/4;
+int K_Tile = K/T;
 
 using namespace adf;
 
