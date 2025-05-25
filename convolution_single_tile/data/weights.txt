@@ -1,0 +1,5 @@
+// 3x3 convolution kernel weights (int16 values)
+// Each row represents a row of the convolution kernel
+1 0 -1
+2 0 -2
+1 0 -1
