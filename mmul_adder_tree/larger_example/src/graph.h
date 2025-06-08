@@ -5,6 +5,10 @@
 
 using namespace adf;
 
+const int T = 24;
+const int K = 768;
+const int M = 128;
+
 class SingleTileTest : public adf::graph {
 public:
         kernel mmul[T/6][T/4];
@@ -14,19 +18,17 @@ public:
 	input_plio in_B[T/6][T/4];
 	output_plio out_C;
 
-	input_port a_block_param[T];
-
     SingleTileTest() {
         in_A = input_plio::create(plio_128_bits, "data/A_matrix.txt");
         out_C = output_plio::create(plio_128_bits, "data/C_output.txt");
-	add[4] = kernel::create(add_tree_4);
+	add[4] = kernel::create_object<add_tree_4>(M);
 	source(add[4]) = "src/kernels/add_tree.cpp";
 	connect(add[4].out[0], out_C.in[0]); 
 	dimensions(add[4].out[0]) = {N*M};
 	runtime<ratio>(add[4]) = 1.0;
 
 	for (int t = 0; t < 4; ++t) {
-	    add[t] = kernel::create(add_tree_6);
+	    add[t] = kernel::create_object<add_tree_6>(M);
 	    source(add[t]) = "src/kernels/add_tree.cpp";
 	    runtime<ratio>(add[t]) = 1.0;
 	    dimensions(add[t].out[0]) = {N*M};
@@ -37,7 +39,7 @@ public:
 	        dimensions(add[t].in[i]) = {N*M};
                 in_B[t][i] = input_plio::create(plio_128_bits, "data/B_"+std::to_string(t*6+i)+ ".txt");
 	     
-                mmul[t][i] = kernel::create(mmul_skinny);
+                mmul[t][i] = kernel::create_object<mmul_skinny>(768, 128, 24, t*6+i);
                 source(mmul[t][i]) = "src/kernels/kernels.cpp";
 
                 runtime<ratio>(mmul[t][i]) = 1.0;
@@ -49,9 +51,6 @@ public:
                 connect(in_A.out[0], mmul[t][i].in[0]);
                 connect(in_B[t][i].out[0], mmul[t][i].in[1]);
                 connect(mmul[t][i].out[0], add[t].in[i]);
-
-	        // Connect parameter ports
-	        connect(a_block_param[t*6+i], mmul[t][i].in[2]);
 	    }
 	    location<kernel>(add[t]) = tile(2*t+1, 2);
 	    location<kernel>(mmul[t][0]) = tile(2*t, 0);
