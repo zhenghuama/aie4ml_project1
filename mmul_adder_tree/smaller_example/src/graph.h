@@ -20,10 +20,11 @@ public:
 
 	output_plio out_C;
 
-    layer_128x128() {
+    mmul_128x128() {
         in_A = input_plio::create(plio_128_bits, "data/A_matrix.txt");
         out_C = output_plio::create(plio_128_bits, "data/C_output.txt");
 
+	// Syntax change: the kernel is initialized through the wrapper class and called with the correct attributes
 	add = kernel::create_object<add_tree_4>(M);
 	source(add) = "src/kernels/add_tree.cpp";
 	runtime<ratio>(add) = 1.0;
@@ -37,6 +38,7 @@ public:
 	    dimensions(add.in[i]) = {N*M};
             in_B[i] = input_plio::create(plio_128_bits, "data/B_"+std::to_string(i)+ ".txt");
 
+	    // Note how the necessary attributes are given to the kernel wrapper class
             mmul[i] = kernel::create_object<mmul_skinny>(K, M, T, i);
 
             runtime<ratio>(mmul[i]) = 1.0;
