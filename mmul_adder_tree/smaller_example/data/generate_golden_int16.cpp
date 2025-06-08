@@ -5,6 +5,10 @@
 using namespace std;
 
 int main() {
+   const int M = 128;
+   const int K = 128;
+   const int T = 4;
+
    for (int k = 0; k < T; ++k) {
        std::ofstream B;
        B.open("B_"+to_string(k)+".txt", std::ios::trunc);
