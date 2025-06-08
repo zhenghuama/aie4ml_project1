@@ -11,7 +11,7 @@ AIE_FLAGS += --include="$(SRC_DIR)"
 AIE_FLAGS += --include="$(SRC_DIR)/kernels"      
 AIE_FLAGS += --xlopt=0
 
-AIE_SOURCES := $(SRC_DIR)/graph.cpp $(SRC_DIR)/kernels/kernels.cpp
+AIE_SOURCES := $(SRC_DIR)/graph.cpp $(SRC_DIR)
 
 compile:
 	aiecompiler $(AIE_FLAGS) $(AIE_SOURCES) -workdir=$(AIE_OUT_DIR)

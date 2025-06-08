@@ -51,7 +51,7 @@ public:
              
                 // Create mmul kernel with block-specific ID
                 mmul[t][i] = kernel::create_object<mmul_skinny>(768, 128, 24, t*6+i);
-                source(mmul[t][i]) = "src/kernels/kernels.cpp";
+                source(mmul[t][i]) = "src/kernels/mmul.cpp";
                 runtime<ratio>(mmul[t][i]) = 1.0;
 
                 // Buffer dimension annotations
