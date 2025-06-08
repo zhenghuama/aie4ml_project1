@@ -20,7 +20,7 @@ void mmul_skinny::run(
    auto a_iter = aie::begin_vector<VEC>(a_buf) + K_Tile/VEC*a_block;
    auto c_iter = aie::begin(c_buf);
 
-   // Outer loop over N - typically batch dimension
+   // Outer loop over N - batch dimension
    for (int n = 0; n < N; ++n) {
        auto b_iter = aie::begin_vector<VEC>(b_buf);
        // M dimension - rows of output matrix
