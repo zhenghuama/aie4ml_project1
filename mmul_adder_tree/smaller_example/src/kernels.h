@@ -4,12 +4,12 @@
 
 using namespace adf;
 
-// Matrix multiplication kernel class wrapper for "skinny" matrices (one dimension much larger)
+// Matrix multiplication kernel for tiled processing
 class mmul_skinny {
-    int K;       // Inner dimension (columns of A / rows of B)
-    int M;       // Rows of A and C
-    int T;       // Columns of B and C
-    int a_block; // Block ID for parallel processing
+    int K;       // Inner dimension (cols of A / rows of B)
+    int M;       // Columns of output matrix (C)
+    int T;       // Number of tiles
+    int a_block; // Tile/block ID for parallel execution
 public:
     mmul_skinny(int K_val, int M_val, int T_val, int id) 
         : K(K_val), M(M_val), T(T_val), a_block(id) {}
@@ -18,7 +18,7 @@ public:
              adf::input_buffer<int16>& b_buf,
              adf::output_buffer<int16>& c_buf);
 
-    // Registers kernel function and parameters with the ADF runtime
+    // ADF framework registration (exposes parameters to toolchain)
     static void registerKernelClass() {
         REGISTER_FUNCTION(mmul_skinny::run);
         REGISTER_PARAMETER(K);
@@ -28,9 +28,9 @@ public:
     }
 };
 
-// 4-input addition tree kernel (element-wise sum of 4 vectors)
+// 4-input adder tree for output matrix columns (M)
 class add_tree_4 {
-    int M; // Vector length
+    int M; // Columns of output matrix
 public:
     add_tree_4(int M_val) : M(M_val) {}
 
