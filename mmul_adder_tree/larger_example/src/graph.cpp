@@ -3,11 +3,11 @@
 
 using namespace adf;
 
-SingleTileTest mmul_graph;
+mmul_graph g;
 
 int main(void) {
-   mmul_graph.init();
-   mmul_graph.run(1);
-   mmul_graph.end();
+   g.init();
+   g.run(1);
+   g.end();
    return 0;
 }
