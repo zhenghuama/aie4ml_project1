@@ -6,6 +6,7 @@ This repo contains development and documentation of AIE4ML project 1, [Project d
 **Repo structure:**
   - `./vector-addition` contains two distinct implementations which compare the ``aie::buffer`` vs ``aie::stream`` data movement methods
   - `./matmul-single-tile` is an elementary 4x4 matrix multiplication for understanding the format of aie::mul
+  - `./conv2d-single-tile` is a very simple 3x3 convolution kernel as another example.
   - `./matmul-multi-tile` scales up the previous simple kernel to multiple tiles for parrallel processing
   - `./matmul-add-tree ` implements an addition-tree style data flow for more scalabled mult-tile matrix computation
   - `./mnist-mlp` is a simple MLP neural network quantized for int16. It uses  `mmul_add_tree` to perform dense layers.
