@@ -1,4 +1,4 @@
-# AIE4ML Project 1
+AIE4ML Project 1
 ====================
 
 This repo contains development and documentation of AIE4ML project 1, [Project description](https://docs.google.com/presentation/d/1TGhn2yvmKFxDjmy0UJLweu5KbBvQz4DxouOcfj35NIc/edit#slide=id.g34ae8a4d457_0_272).
