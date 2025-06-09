@@ -135,7 +135,7 @@ The graph code will define constraints. You'll also notice the definition of mul
 
 
 
-.. image:: image/perfect.svg
+.. image:: ../images/perfect.svg
    :alt: Vector addition stream diagram
    :align: center
 
