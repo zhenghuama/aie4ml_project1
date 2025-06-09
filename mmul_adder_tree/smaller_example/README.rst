@@ -1,4 +1,4 @@
-Multi-Tile Matrix Multiplication with Adder-Tree
+Multi-Tile Matrix Multiplication with Adder-Tree (4x128x128)
 ====================================================
 In the Simple Multi-Tile Matrix Multiplication Example (16x16x16), the entire inner dimension (K) of the matrix multiplication is kept intact and not split across tiles. Here, K represents the inner dimension in an NxKxM multiplication, where A is MxK and B is KxN.
 
