@@ -3,7 +3,7 @@
 This repo contains development and documentation of AIE4ML project 1, [Project description](https://docs.google.com/presentation/d/1TGhn2yvmKFxDjmy0UJLweu5KbBvQz4DxouOcfj35NIc/edit#slide=id.g34ae8a4d457_0_272).
 
 ## Repo structure
-
+- `./basic-data-movement` shows how to implement constraints for clean, optimal data movement
 - `./vector-addition` contains two distinct implementations which compare the `aie::buffer` vs `aie::stream` data movement methods
 - `./matmul-single-tile` is an elementary 4x4 matrix multiplication for understanding the format of aie::mul
 - `./conv2d-single-tile` is a very simple 3x3 convolution kernel as another example
