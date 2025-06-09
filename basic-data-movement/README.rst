@@ -131,7 +131,7 @@ We include an extrapolation of these concepts. It almost looks like a shoots and
 
 The graph code will define constraints. You'll also notice the definition of multiple kernels as an array.
 
-.. image:: image/perfect.svg
+.. image:: ../images/perfect.svg
    :alt: Vector addition stream diagram
    :align: center
 
