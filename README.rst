@@ -7,9 +7,9 @@ This repo contains development and documentation of AIE4ML project 1, [Project d
   - `./vector-addition` contains two distinct implementations which compare the ``aie::buffer`` vs ``aie::stream`` data movement methods
   - `./matmul-single-tile` is an elementary 4x4 matrix multiplication for understanding the format of aie::mul
   - `./matmul-multi-tile` scales up the previous simple kernel to multiple tiles for parrallel processing
-  - `./mmul_add_tree ` implements an addition-tree style data flow for more scalabled mult-tile matrix computation
-  - `./mnist_mlp` is a simple MLP neural network quantized for int16. It uses  `mmul_add_tree` to perform dense layers.
-  - `./dense_example` is an example of a dense+relu layer with 16 bit quantization on 1 AIE tile. It is more optimized and uses FPGA PL for Versal VCK 190.
+  - `./mmul-add-tree ` implements an addition-tree style data flow for more scalabled mult-tile matrix computation
+  - `./mnist-mlp` is a simple MLP neural network quantized for int16. It uses  `mmul_add_tree` to perform dense layers.
+  - `./dense-example` is an example of a dense+relu layer with 16 bit quantization on 1 AIE tile. It is more optimized and uses FPGA PL for Versal VCK 190.
 
 AI Engine vs other Accelerators
 ================================
