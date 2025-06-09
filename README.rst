@@ -12,7 +12,7 @@ This repo contains development and documentation of AIE4ML project 1, [Project d
   - `./dense_example` is an example of a dense+relu layer with 16 bit quantization on 1 AIE tile. It is more optimized and uses FPGA PL for Versal VCK 190.
 
 AI Engine vs other Accelerators
-============================
+================================
 
 The AIE architectures were designed with Machine Learning in mind. But today most of these applcations are run on GPUs. So why would one prefer to run ML tasks on an AIE? And how would the performance compare?
 
