@@ -6,7 +6,7 @@ Keeping the inner dimension whole allows each kernel to perform matrix multiplic
 
 There are several ways to combine outputs between kernels. One approach is to use the cascade stream to pass data directly between accumulator registers of neighboring kernels. In this example, matrix multiplication tiles are placed next to a central addition kernel (``add_tree.cpp``), which reads output buffers from its neighbors and accumulates the partial results.
 
-.. figure:: ../../images/adder-tree.png
+.. figure:: ../../images/add_tree.png
    :alt: Adder-tree tiling scheme
    :width: 600px
    :align: center
